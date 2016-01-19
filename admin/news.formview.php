@@ -2,6 +2,7 @@
 include "./cms.header.php";
 include "./cms.meta.php";
 require("../include/news.class.php");
+require("../include/sort.class.php");
 
 $news = new MyNews;
 $id = 0;
@@ -34,8 +35,12 @@ if(isset($_GET["id"])){
     <select name="pid" id="pid" class="form-control require" style="width:250px;">
       <option value="0">根目录</option>
       <?php
-$arr = getSortArray();
-echo getSelect($arr);
+        $sort = new MySort;
+        $arrayList = $sort->getList();
+        $arrayList = $sort->levelList($arrayList);
+        foreach ($arrayList as $key => $row) {
+          echo '<option value="'.$row["id"].'">'.$row["deepTag"].$row["title"].'</option>';
+        }
       ?>
     </select>
 

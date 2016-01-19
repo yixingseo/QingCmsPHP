@@ -7,7 +7,7 @@ require("../include/sort.class.php");
 
 <div class="tools">
     <div class="form-inline">
-      <div class="form-group"><a class="btn btn-primary" href="sort.formview.asp"><i class="fa fa-plus-circle"></i> 添加分类</a></div>
+      <div class="form-group"><a class="btn btn-primary" href="sort.formview.php"><i class="fa fa-plus-circle"></i> 添加分类</a></div>
     </div>
 </div>
 
@@ -21,15 +21,33 @@ require("../include/sort.class.php");
     <th>排序</th>
     <th>操作</th>
   </tr>
+<?php
+$sort = new MySort;
+$arrayList = $sort->getList();
+$arrayList = $sort->levelList($arrayList);
+foreach ($arrayList as $key => $row) {
+?>
+
+<tr id="row_<?php echo $row["id"] ?>" <?php if($row["deep"] == 0){?>class="active"<?php } ?>>
+  <td><?php echo $row["id"] ?></td>
+  <td><?php echo $row["deepTag"] ?> <?php echo $row["title"] ?></td>
+  <td><?php echo $row["url"] ?></td>
+  <td><?php echo $row["sort_template"] ?></td>
+  <td><?php echo $row["content_template"] ?></td>
+  <td><?php echo $row["weight"] ?></td>
+  <td>
+    <a href="sort.formview.php?id=<?php echo $row["id"]?>"><i class="fa fa-pencil"></i> 修改</a>
+    <a href="sort.action.php?action=rec&id=<?php echo $row["id"]?>" onclick="return confirm('确定要删除吗')"><i class="fa fa-trash-o"></i> 删除</a>
+  </td>
+</tr>
+<?php
+}
+?>
 
 
 </table>
 
 
-<?php
-$sort = new MySort();
-$sort->levelList();
- ?>
 
 
 </body>

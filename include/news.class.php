@@ -7,6 +7,15 @@ class MyNews
 	public $model;
 	public $table = 't_news';
 
+	/**
+	 * 析构函数
+	 */
+	function __construct($id=0){
+		$this->model["id"] = 0;
+		$this->model["weight"] = 0;
+		$this->model["pid"] = 0;		
+	}
+
 	//读取列表
 	function read_list($sqlWhere='',$order='weight desc,id desc'){
 		$sql = "select * from ". $this->table ." where show > -1 ";
