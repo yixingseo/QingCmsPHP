@@ -1,16 +1,19 @@
 <?php
 require("./cms.header.php");
-require("../include/news.class.php");
-$news = new MyNews;
+require("../include/config.class.php");
+$config = new MyConfig;
+if(!isset($_GET["action"]))
+	exit;
+
 $action = $_GET["action"];
 
 switch ($action) {
 	case 'insert':
-		$news->insert();
+		$config->insert();
 		break;
 
 	case 'update':
-		$news->update();
+		$config->update();
 		break;
 
 	case 'delete':
@@ -21,4 +24,5 @@ switch ($action) {
 		break;
 }
 
+redirect("config.cms.php");
 ?>

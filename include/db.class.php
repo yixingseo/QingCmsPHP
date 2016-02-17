@@ -66,7 +66,14 @@ class MyPDO extends PDO
     function insert($sql,$parameters){
         $rs = $this->prepare($sql);
         $rs->execute($parameters);
-        return $rs->lastInsertId();
+        return $this->lastInsertId();
+    }
+
+    //删除
+    function delete($sql,$parameters){
+        $rs = $this->prepare($sql);
+        $rs->execute($parameters);
+        return $rs->rowCount();
     }
 
 }
@@ -83,7 +90,7 @@ class DbManage {
     public $sqlContent = "";
     // 每条sql语句的结尾符
     public $sqlEnd = ";";
- 
+
     /**
      * 初始化
      *
@@ -107,9 +114,9 @@ class DbManage {
         mysql_select_db ( $this->database, $this->db ) or die('<p class="dbDebug"><span class="err">Mysql Connect Error:</span>'.mysql_error().'</p>');
         // 数据库编码方式
         mysql_query ( 'SET NAMES ' . $this->charset, $this->db );
- 
+
     }
- 
+
     /*
      * 新增查询数据库表
      */
@@ -121,7 +128,7 @@ class DbManage {
         }
         return $tables;
     }
- 
+
     /**
      * 数据库备份
      * 参数：备份哪个表(可选),备份目录(可选，默认为backup),分卷大小(可选,默认2000，即2M)
@@ -130,11 +137,11 @@ class DbManage {
      * @param int $size
      * @param $string $tablename
      */
-    function backup($tablename='', $dir='./backup/', $size=2048) {        
+    function backup($tablename='', $dir='./backup/', $size=2048) {
         // 创建目录
         if (! is_dir ( $dir )) {
             mkdir ( $dir, 0777, true ) or die ( '创建文件夹失败' );
-        }        
+        }
         $sql = '';
         // 只备份某个表
         if (! empty ( $tablename )) {
@@ -213,14 +220,14 @@ class DbManage {
                 $sql .= $this->_insert_table_structure ( $tablename );
                 $data = mysql_query ( "select * from " . $tablename );
                 $num_fields = mysql_num_fields ( $data );
- 
+
                 // 循环每条记录
                 while ( $record = mysql_fetch_array ( $data ) ) {
                     // 单条记录
                     $sql .= $this->_insert_record ( $tablename, $num_fields, $record );
                     // 如果大于分卷大小，则写入文件
                     if (strlen ( $sql ) >= $size * 1000) {
- 
+
                         $file = $filename . "_v" . $p . ".sql";
                         // 写入文件
                         if ($this->_write_file ( $sql, $file, $dir )) {
@@ -249,15 +256,15 @@ class DbManage {
             $this->_showMsg("恭喜您! <span class='imp'>备份成功</span>");
         }
     }
- 
+
     //  及时输出信息
     private function _showMsg($msg,$err=false){
         $err = $err ? "<span class='err'>ERROR:</span>" : '' ;
         echo "<p class='dbDebug'>".$err . $msg."</p>";
         flush();
- 
+
     }
- 
+
     /**
      * 插入数据库备份基础信息
      *
@@ -282,7 +289,7 @@ class DbManage {
         $value .= $this->ds . $this->ds;
         return $value;
     }
- 
+
     /**
      * 插入表结构
      *
@@ -294,7 +301,7 @@ class DbManage {
         $sql .= "--" . $this->ds;
         $sql .= "-- 表的结构" . $table . $this->ds;
         $sql .= "--" . $this->ds . $this->ds;
- 
+
         // 如果存在则删除表
         $sql .= "DROP TABLE IF EXISTS `" . $table . '`' . $this->sqlEnd . $this->ds;
         // 获取详细表信息
@@ -310,7 +317,7 @@ class DbManage {
         $sql .= $this->ds;
         return $sql;
     }
- 
+
     /**
      * 插入单条记录
      *
@@ -332,7 +339,7 @@ class DbManage {
         $insert .= ");" . $this->ds;
         return $insert;
     }
- 
+
     /**
      * 写入文件
      *
@@ -362,12 +369,12 @@ class DbManage {
         }
         return $re;
     }
- 
+
     /*
      *
      * -------------------------------上：数据库导出-----------分割线----------下：数据库导入--------------------------------
      */
- 
+
     /**
      * 导入备份数据
      * 说明：分卷文件格式20120516211738_all_v1.sql
@@ -411,7 +418,7 @@ class DbManage {
                     // 执行导入方法
                     $this->msg .= "正在导入分卷 $volume_id ：<span style='color:#f00;'>" . $tmpfile . '</span><br />';
                     if ($this->_import ( $tmpfile )) {
- 
+
                     } else {
                         $volume_id = $volume_id ? $volume_id :1;
                         exit ( "导入分卷：<span style='color:#f00;'>" . $tmpfile . '</span>失败！可能是数据库结构已损坏！请尝试从分卷1开始导入' );
@@ -443,7 +450,7 @@ class DbManage {
                     // 执行导入方法
                     $this->msg .= "正在导入分卷 $volume_id ：<span style='color:#f00;'>" . $tmpfile . '</span><br />';
                     if ($this->_import ( $tmpfile )) {
- 
+
                     } else {
                         $volume_id = $volume_id ? $volume_id :1;
                         exit ( "导入分卷：<span style='color:#f00;'>" . $tmpfile . '</span>失败！可能是数据库结构已损坏！请尝试从分卷1开始导入' );
@@ -456,7 +463,7 @@ class DbManage {
             }
         }
     }
- 
+
     /**
      * 将sql导入到数据库（普通导入）
      *
@@ -493,7 +500,7 @@ class DbManage {
         fclose ( $f );
         return true;
     }
- 
+
     //插入单条sql语句
     private function _insert_into($sql){
         if (! mysql_query ( trim ( $sql ) )) {
@@ -501,16 +508,16 @@ class DbManage {
             return false;
         }
     }
- 
+
     /*
      * -------------------------------数据库导入end---------------------------------
      */
- 
+
     // 关闭数据库连接
     private function close() {
         mysql_close ( $this->db );
     }
- 
+
     // 锁定数据库，以免备份或导入时出错
     private function lock($tablename, $op = "WRITE") {
         if (mysql_query ( "lock tables " . $tablename . " " . $op ))
@@ -518,7 +525,7 @@ class DbManage {
         else
             return false;
     }
- 
+
     // 解锁
     private function unlock() {
         if (mysql_query ( "unlock tables" ))
@@ -526,7 +533,7 @@ class DbManage {
         else
             return false;
     }
- 
+
     // 析构
     function __destruct() {
         if($this->db){
@@ -534,6 +541,6 @@ class DbManage {
             mysql_close ( $this->db );
         }
     }
- 
+
 }
  ?>

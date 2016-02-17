@@ -1,6 +1,9 @@
-<%@LANGUAGE="VBSCRIPT" CODEPAGE="65001"%>
-<!--#include file="cms.header.asp" -->
-<!--#include file="cms.meta.html" -->
+<?php
+include "./cms.header.php";
+include "./cms.meta.php";
+include "../include/tag.class.php";
+
+?>
 <h3>区块管理</h3>
 <div class="tools">
 <div class="form-inline">
@@ -40,4 +43,6 @@ Wend
 
 </body>
 </html>
-<!--#include file="cms.footer.asp" -->
+
+<?php include "./cms.footer.php"; ?>
+

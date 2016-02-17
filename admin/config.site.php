@@ -1,15 +1,21 @@
-<%@LANGUAGE="VBSCRIPT" CODEPAGE="65001"%>
-<!--#include file="cms.header.asp" -->
-<!--#include file="cms.meta.html"-->
+<?php 
+require "./cms.header.php";
+require "./cms.meta.php";
+require "../include/config.class.php";
+
+$config = new MyConfig;
+$config->read();
+ ?>
+
 <body class="abody">
 <h3>网站设置</h3>
-<form action="config.action.asp?action=save&redirect=<%=e.getUrl%>" method="post">
+<form action="config.action.php?action=update&redirect=config.site.php" method="post">
 
     <table width="100%" class="table table-bordered table-hover table-admin">
       <tr>
         <th><label for="domain">网站域名</label></th>
         <td style="width:550px;">
-            <input name="domain" type="text" class="form-control" id="domain" value="<%=site.dic("domain")%>" maxlength="50" />
+            <input name="domain" type="text" class="form-control" id="domain" value="<?php echo $config->data['domain'] ?>" maxlength="50" />
         </td>
         <td>
           <div class="tip">网站域名：http://www.xxx.com/</div>
@@ -19,7 +25,7 @@
       <tr>
         <th><label for="title">公司名称</label></th>
         <td>
-            <input name="title" type="text" class="form-control" id="title" value="<%=site.dic("title")%>" maxlength="255" />
+            <input name="title" type="text" class="form-control" id="title" value="<?php echo $config->data['title'] ?>" maxlength="255" />
         </td>
         <td>
            <div class="tip">公司名称 / 网站名称</div>
@@ -29,21 +35,11 @@
       <tr>
         <th><label for="title">网站LOGO</label></th>
         <td>
-<div class="input-group">
-  <input name="logo" type="text" class="form-control" id="logo" value="<%=site.dic("logo")%>" maxlength="255" />
-  <div class="input-group-btn" style="position:relative">
-    <input name="" type="button" class="btn btn-default" value="上传图片" id="upload_btn" onClick="selectFile()">
-    <iframe class="upload_btn" src="upload.asp?input=logo" style="position:absolute;top:0;z-index:999;right:0px;width:90px;height:35px;" scrolling="no" frameborder="0"></iframe>
-  </div>
-</div>
-
+          <input name="logo" type="text" class="form-control" id="logo" value="<?php echo $config->data['logo'] ?>" maxlength="255" />
         </td>
         <td>
            <div class="tip">
            仅支持jpg、png格式
-<%if site.dic("logo") <> "" then%>
-<p><a href="<%=site.dic("logo")%>" target="_blank">[查看]</a></p>
-<%end if%>
            </div>
         </td>
       </tr>
@@ -51,7 +47,7 @@
       <tr>
         <th><label for="seotitle">首页标题</label></th>
         <td>
-            <input name="seotitle" type="text" class="form-control" id="seotitle" value="<%=site.dic("seotitle")%>" maxlength="255" />
+            <input name="seotitle" type="text" class="form-control" id="seotitle" value="<?php echo $config->data['seotitle'] ?>" maxlength="255" />
         </td>
         <td>
           <div class="tip">网站首页标题，不做SEO可以不填</div>
@@ -61,7 +57,7 @@
       <tr>
         <th><label>SEO关键词</label></th>
         <td>
-            <input name="keywords" type="text" class="form-control" id="keywords" value="<%=site.dic("keywords")%>" maxlength="255" />
+            <input name="keywords" type="text" class="form-control" id="keywords" value="<?php echo $config->data['keywords'] ?>" maxlength="255" />
         </td>
         <td><div class="tip">网站关键词\SEO关键词，不做SEO可以不填</div></td>
       </tr>
@@ -69,7 +65,7 @@
       <tr>
         <th><label>SEO网站描述</label></th>
         <td>
-            <textarea name="description" rows="3" class="form-control" id="description"><%=site.dic("description")%></textarea>
+            <textarea name="description" rows="3" class="form-control" id="description"><?php echo $config->data['description'] ?></textarea>
         </td>
         <td><div class="tip">网站描述\SEO描述，不做SEO可以不填</div></td>
       </tr>
@@ -77,7 +73,7 @@
       <tr>
         <th><label>版权信息</label></th>
         <td>
-            <textarea name="copyright" rows="3" class="form-control" id="copyright"><%=site.dic("copyright")%></textarea>
+            <textarea name="copyright" rows="3" class="form-control" id="copyright"><?php echo $config->data['copyright'] ?></textarea>
         </td>
         <td>
           <div class="tip">版权信息</div>
@@ -87,7 +83,7 @@
       <tr>
         <th><label>网站公告</label></th>
         <td>
-            <textarea name="info" rows="3" class="form-control" id="info"><%=site.dic("info")%></textarea>
+            <textarea name="info" rows="3" class="form-control" id="info"><?php echo $config->data['info'] ?></textarea>
         </td>
         <td>
           <div class="tip">网站公告</div>
@@ -97,7 +93,7 @@
       <tr>
         <th><label>客服QQ</label></th>
         <td>
-            <input name="online" type="text" class="form-control" id="online" value="<%=site.dic("online")%>" maxlength="255" />
+            <input name="online" type="text" class="form-control" id="online" value="<?php echo $config->data['info'] ?>" maxlength="255" />
         </td>
         <td>
           <div class="tip">网站客服QQ，多个之间用 "," 半角英文逗号隔开</div>
@@ -107,7 +103,7 @@
       <tr>
         <th><label>客服电话</label></th>
         <td>
-            <input name="phone" type="text" class="form-control" id="phone" value="<%=site.dic("phone")%>" maxlength="255" />
+            <input name="phone" type="text" class="form-control" id="phone" value="<?php echo $config->data['phone'] ?>" maxlength="255" />
         </td>
         <td>
           <div class="tip">客服电话</div>
@@ -117,7 +113,7 @@
       <tr>
         <th><label>管理员邮箱</label></th>
         <td>
-            <input name="email" type="text" class="form-control" id="email" value="<%=site.dic("email")%>" maxlength="255" />
+            <input name="email" type="text" class="form-control" id="email" value="<?php echo $config->data['email'] ?>" maxlength="255" />
         </td>
         <td>
           <div class="tip">管理员邮箱，用于接收在线订购/留言/评论等信息</div>
@@ -134,4 +130,5 @@
 
 </form>
 </body>
-<!--#include file="cms.footer.asp" -->
+
+<?php include "./cms.footer.php" ?>

@@ -1,10 +1,34 @@
 <?php
-include "cms.header.php";
-include "cms.meta.php";
+include "./cms.header.php";
+include "./cms.meta.php";
 
 include "../include/news.class.php";
+
+$where = " where news.show > -1 ";
+$parameters = array();
+
+if(isset($_GET['search_keywords'])){
+  $where.= "and news.title like '%".$_GET['search_keywords']."%' ";
+}
+
+$plist = pagelist("select count(*) from t_news as news " . $where,20);
+$sql = "SELECT 
+news.id, 
+news.title,
+news.att,
+news.url,
+news.pic,
+news.weight,
+news.hits,
+sort.id as sort_id,
+sort.title as sort_title
+FROM `t_news` AS news
+LEFT JOIN `t_sort` as sort
+ON sort.id = news.pid ". $where . $plist['limit'];
+$rs = $DB->prepare($sql,$parameters);
+echo $sql;
 ?>
-<form action="news.listview.asp" method="get">
+
 <h3>内容管理</h3>
 <!-- 操作 -->
 <div class="tools">
@@ -17,12 +41,14 @@ include "../include/news.class.php";
 		</div>
 
 		<div class="form-group">
-			<div class="input-group">
-					<input name="search_key" type="text" class="form-control">
-					<span class="input-group-btn">
-							<input name="search_btn" type="submit" class="btn btn-default" value="搜索">
-					</span>
-			</div>
+      <form action="news.listview.php" method="get">
+  			<div class="input-group">
+  					<input name="search_keywords" id="search_keywords" type="text" class="form-control">
+  					<span class="input-group-btn">
+  							<input name="search_btn" id="search_btn" type="submit" class="btn btn-default" value="搜索">
+  					</span>
+  			</div>
+      </form>
 		</div>
 
 		<div class="form-group">
@@ -35,16 +61,13 @@ include "../include/news.class.php";
 		<div class="form-group">
 				<select name="att_jump_box" id="att_jump_box" class="form-control">
         	<option value="">按特性查看</option>
-
         		<option value="<%=attArray(k)%>"><%=attArray(k)%></option>
-
         </select>
 		</div>
-
 	</div>
 </div>
 <!-- 操作栏 -->
-</form>
+
 
 <table class="table table-bordered table-hover">
   <tr>
@@ -60,21 +83,21 @@ include "../include/news.class.php";
     <th>操作</th>
   </tr>
 <?php
-$rs=$DB->prepare("select * from t_news order by weight desc,id desc");
+//$rs=$DB->prepare("select * from t_news order by weight desc,id desc");
 $rs->execute();
 foreach ($rs as $key => $row) {
   //var_dump($row);
-	# code...
+	# code...  
  ?>
   <tr id="<?php echo $row["id"]?>">
   	<td align="center"><input name="ids" type="checkbox" class="ck" value="<?php echo $row["id"]?>" /></td>
     <td class="listview_id"><?php echo $row["id"]?></td>
     <td><?php echo $row["title"]?></td>
     <td><i class="fa fa-link"></i> 浏览</td>
-	<td class="text-center"><i class="fa fa-photo showpic"></td>
-    <td align="center"></a></td>
+    <td class="text-center"><i class="fa fa-photo showpic"></td>
+    <td align="center"> <a href="?pid=<?php echo $row["sort_id"]; ?>"><?php echo cutString($row["sort_title"],10); ?></a></td>
     <td>
-
+      <?php echo $row["att"] ?>
     </td>
     <td><?php echo $row["hits"]?></td>
     <td class="ajax_weight"><?php echo $row["weight"]?></td>
@@ -88,8 +111,20 @@ foreach ($rs as $key => $row) {
  ?>
 </table>
 
+<?php 
+echo $plist['html'];
+ ?>
 
+<script>
+$(function(){
 
+})
+
+<?php if($_GET['search_keywords']){?>
+$('#search_keywords').val('<?php echo $_GET['search_keywords'] ?>');
+<?php } ?>
+
+</script>
 </body>
 </html>
-<!--#include file="cms.footer.php" -->
+<?php include "./cms.footer.php"; ?>

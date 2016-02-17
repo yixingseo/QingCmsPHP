@@ -12,151 +12,167 @@ if(isset($_GET["id"])){
 }
 
 ?>
-
+<!-- 编辑器 -->
 <script src="../include/ueditor/ueditor.config.js"></script>
 <script src="../include/ueditor/ueditor.all.min.js"></script>
+<!-- 图片上传 -->
+<script src="../include/webuploader/webuploader.min.js"></script>
+<link rel="stylesheet" href="../include/webuploader/webuploader.css">
 
 <form action="news.action.php?action=<?php if($news->model["id"] > 0){echo "update";}else{echo "insert";} ?>" method="post" name="form" id="form">
-<input type="hidden" name="id" value="<?php echo $news->model["id"]; ?>">
+<div class="container-fluid">
 
-<ul class="nav nav-tabs" role="tablist">
-   <li role="presentation" class="active"><a href="#base" aria-controls="base" role="tab" data-toggle="tab">基本信息</a></li>
-   <li role="presentation"><a href="#seo" aria-controls="seo" role="tab" data-toggle="tab">SEO信息</a></li>
-</ul>
+    <div class="row">
+        <!-- left -->
+        <div class="col-xs-9 form-horizontal">
 
-<div class="tab-content">
+            <!-- pid -->
+            <div class="form-group">
+                <label for="" class="col-sm-2 control-label">* 内容分类</label>
+                <div class="col-sm-10">
+                    <select name="pid" id="pid" class="form-control require" style="width:300px;">
+                      <option value="0">根目录</option>
+                      <?php
+                        $sort = new MySort;
+                        $arrayList = $sort->getList();
+                        $arrayList = $sort->getLevelList($arrayList);
+                        foreach ($arrayList as $key => $row) {
+                          echo '<option value="'.$row["id"].'">'.$row["deepTag"].$row["title"].'</option>';
+                        }
+                      ?>
+                    </select>
+                </div>
+            </div>
 
-<!-- base -->
-<div role="tabpanel" class="tab-pane active" id="base">
-  <table class="table table-hover table-bordered table-admin">
-  <tr>
-    <th><label>内容分类</label></th>
-    <td>
-    <select name="pid" id="pid" class="form-control require" style="width:250px;">
-      <option value="0">根目录</option>
-      <?php
-        $sort = new MySort;
-        $arrayList = $sort->getList();
-        $arrayList = $sort->levelList($arrayList);
-        foreach ($arrayList as $key => $row) {
-          echo '<option value="'.$row["id"].'">'.$row["deepTag"].$row["title"].'</option>';
-        }
-      ?>
-    </select>
+            <!-- title -->
+            <div class="form-group">
+                <label for="" class="col-sm-2 control-label">* 内容标题</label>
+                <div class="col-sm-10">
+                    <input name="title" type="text" id="title" value="<?php echo $news->model["title"];?>" placeholder="内容标题" class="form-control require" />
+                </div>
+            </div>
 
-    </td>
-    <td><div class="tip">内容所属栏目/分类</div></td>
-  </tr>
-  <tr>
-    <th><label>内容标题</label></th>
-    <td style="width:550px;"><input name="title" type="text" id="title" value="<?php echo $news->model["title"];?>" class="form-control require" /></td>
-    <td><div class="tip">内容的标题/名称</div></td>
-  </tr>
+            <!-- info -->
+            <div class="form-group">
+                <label for="" class="col-sm-2 control-label">内容摘要</label>
+                <div class="col-sm-10">
+                    <textarea name="info" class="form-control" id="info" placeholder="内容摘要信息"><?php echo $news->model["info"]; ?></textarea>
+                </div>
+            </div>
 
-  <tr>
-    <th><label>内容摘要</label></th>
-    <td>
-    <textarea name="info" class="form-control" id="info"><?php echo $news->model["info"]; ?></textarea>
-    </td>
-    <td><div class="tip">内容文字摘要，不支持HTML格式</div></td>
-  </tr>
+            <div class="form-group">
+                <label for="" class="col-sm-2 control-label">缩略图</label>
+                <div class="col-sm-10">
+                    <p><input name="pic" type="text" id="pic" value="<?php echo $news->model["pic"];?>" placeholder="" class="form-control" /></p>
+                    <div class="well well-sm">
+                        <div class="" id="filePicker">上传图片</div>
+                    </div>
+                </div>
+            </div>
 
-  <tr>
-    <th><label>缩略图</label></th>
-    <td>
-    <div class="input-group">
-      <input name="pic" type="text" id="pic" value="<?php echo $news->model["pic"] ?>" class="form-control" />
-      <div class="input-group-btn" style="position:relative">
-          <input name="" type="button" class="btn btn-default" value="上传图片" id="upload_btn" onClick="selectFile()">
-          <iframe class="upload_btn" src="upload.asp" style="position:absolute;top:0;z-index:999;right:0px;width:90px;height:35px;" scrolling="no" frameborder="0"></iframe>
+
+            <!-- content -->
+            <div class="form-group">
+                <label for="" class="col-sm-2 control-label">内容主体</label>
+                <div class="col-sm-10">
+                    <script id="content" name="content" type="text/plain" style="width:100%;height:300px;"><?php echo $news->model["content"]; ?></script>
+                </div>
+            </div>
+         
+
+        </div><!-- left.end -->
+
+            <div class="col-xs-3">                
+                <div class="form-group">
+                    <label for="">添加时间</label>
+                    <input name="insert_date" type="text" id="insert_date" value="<?php echo $news->model["insert_date"]; ?>" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label for="">SEO标题</label>
+                    <input name="seotitle" type="text" id="seotitle" value="<?php echo $news->model["seotitle"] ?>" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label for="">SEO关键词</label>
+                    <input name="keywords" type="text" id="keywords" value="<?php echo $news->model["keywords"] ?>" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label for="">SEO描述</label>
+                    <textarea name="description" class="form-control" id="description"><?php echo $news->model["description"] ?></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="">URL别名</label>
+                    <input name="urlname" type="text" id="urlname" value="<?php echo $news->model["urlname"] ?>" class="form-control url" />
+                </div>
+
+                <div class="form-group">
+                    <label for="">内容排序</label>
+                    <input name="weight" type="text" id="weight" value="<?php echo $news->model["weight"]; ?>" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label><input type="checkbox"> 推荐</label>
+                        <label><input type="checkbox"> 滚动</label>
+                        <label><input type="checkbox"> 幻灯片</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label><input type="checkbox"> 放入回收站</label>
+                    </div>
+                </div>
+                
+                <div class="command well text-center">                             
+                    <a href="" class="btn btn-success"> <i class="fa fa-check"></i> 预览</a>                    
+                    <button type="submit" class="btn btn-primary"> <i class="fa fa-check"></i> 发布</button>                    
+                </div>
+            </div><!-- right.end -->
+            <div class="clearfix"></div>
         </div>
     </div>
-    </td>
-    <td>
-      <div class="tip">
-        <a href="#" id="pic_to_content">[添加到编辑器]</a>
-      </div>
-    </td>
-  </tr>
-  <tr>
-    <th><label>内容主体</label></th>
-    <td colspan="2">
-        <script id="content" name="content" type="text/plain" style="width:760px;height:300px;"><?php echo $news->model["content"]; ?></script>
-    </td>
-  </tr>
-
-  <tr>
-    <th><label>排序</label></th>
-    <td><input name="weight" type="text" id="weight" value="<?php echo $news->model["weight"]; ?>" class="form-control weight" /></td>
-     <td><div class="tip">越大排越前</div></td>
-  </tr>
-  <tr>
-    <th><label>添加时间</label></th>
-    <td><input name="insert_date" type="text" id="insert_date" value="<?php echo $news->model["insert_date"]; ?>" class="form-control" style="width:200px;" /></td>
-    <td><div class="tip">注意格式，服务器时间：</div></td>
-  </tr>
-  <tr>
-    <th>&nbsp;</th>
-    <td>
-    <button type="submit" class="btn btn-primary"> <i class="fa fa-check"></i> 保存设置</button>
-    </td>
-    <td></td>
-  </tr>
-</table>
-  </div>
-<!-- base.end -->
-
-<!-- seo -->
-<div role="tabpanel" class="tab-pane" id="seo">
-  <table class="table table-hover table-bordered table-admin">
-    <tr>
-      <th><label>SEO标题</label></th>
-      <td><input name="seotitle" type="text" id="seotitle" value="<?php echo $news->model["seotitle"] ?>" class="form-control" /></td>
-      <td><div class="tip">用于SEO的标题，可以不填</div></td>
-    </tr>
-    <tr>
-      <th><label>SEO关键字</label></th>
-      <td><input name="keywords" type="text" id="keywords" value="<?php echo $news->model["keywords"] ?>" class="form-control" /></td>
-      <td><div class="tip">用于SEO的关键字，多个之间用“，”隔开，可以不填</div></td>
-    </tr>
-    <tr>
-      <th><label>SEO描述</label></th>
-      <td><textarea name="description" class="form-control" id="description"><?php echo $news->model["description"] ?></textarea></td>
-      <td><div class="tip">用于SEO的描述，可以不填</div></td>
-    </tr>
-
-    <tr>
-      <th><label>URL名称</label></th>
-      <td><input name="urlname" type="text" id="urlname" value="<?php echo $news->model["urlname"] ?>" class="form-control url" /></td>
-      <td><div class="tip">需要跳转请输入网址，不跳转自动生成</div></td>
-    </tr>
-    <tr>
-      <th>&nbsp;</th>
-      <td>
-      <button type="submit" class="btn btn-primary"> <i class="fa fa-check"></i> 保存设置</button>
-      </td>
-      <td></td>
-    </tr>
-  </table>
 </div>
-<!-- seo.end -->
-</div>
+<input type="hidden" name="id" value="<?php echo $news->model["id"]; ?>">
+<input type="hidden" name="guid" value="<?php echo $news->model["guid"]; ?>">
 </form>
-<script>
-//编辑器
-var ue = UE.getEditor('content');
 
-function selectFile(){
-	var file = document.getElementById('pic_upload');
-	if(document.all){
-		  file.click();
-	 }
-	 else{
-		 var evt =  document.createEvent("MouseEvents");
-		 evt.initEvent("click", true, true);
-		 file.dispatchEvent(evt);
-	 }
-}
+<script>
+var ue = UE.getEditor('content');
+$(function(){
+    $('#pid').val('<?php echo $news->model["pid"] ?>');
+})
+
+//缩略图上传
+var uploader = WebUploader.create({
+    fileNumLimit:1,
+    auto: true,
+    swf: '../include/webuploader/Uploader.swf',
+    server: '../include/webuploader/server/fileupload.php',
+    pick: '#filePicker',
+    accept: {
+        title: 'Images',
+        extensions: 'jpg,png',
+        mimeTypes: 'image/*'
+    },
+    compress:{
+        width: 400,
+        height: 400,
+    }
+});
+
+uploader.on( 'uploadError', function( file , reason ) {
+   alert('上传失败');
+});
+
+uploader.on( 'uploadSuccess', function( file , response) {    
+    var imgurl = response.url;
+    $('#pic').val(imgurl);
+});
+
 </script>
 
 </body>

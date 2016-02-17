@@ -2,132 +2,178 @@
 require "./cms.header.php";
 require "./cms.meta.php";
 require "../include/sort.class.php";
-$id = isset($_GET["id"]) ? $_GET["id"] : 0;
-$sort = new MySort($id);
-//var_dump($sort->model);
- ?>
+
+$sort = new MySort;
+if(isset($_GET["id"])){
+  $sort->read($_GET["id"]);
+}elseif (isset($_GET["pid"])) {
+  $parent = new MySort;
+  $parent->read($_GET["pid"]);
+  $sort->model["pid"] = $_GET["pid"];
+  $sort->model["sort_template"] = $parent->model["sort_template"];
+  $sort->model["content_template"] = $parent->model["content_template"];
+  $sort->model["is_parent"] = $parent->model["is_parent"];
+  $sort->model["is_nav"] = $parent->model["is_nav"];
+}
+?>
+<!-- 编辑器 -->
 <script src="../include/ueditor/ueditor.config.js"></script>
 <script src="../include/ueditor/ueditor.all.min.js"></script>
-<h3>分类管理</h3>
+
+<!-- 图片上传 -->
+<script src="../include/webuploader/webuploader.min.js"></script>
+<link rel="stylesheet" href="../include/webuploader/webuploader.css">
+<h3 class="admin-title">分类管理</h3>
+
 <form action="sort.action.php?action=<?php echo $sort->model["id"] > 0 ? "update" : "insert" ?>" method="post" id="form">
-<table width="100%" border="0" cellspacing="1" cellpadding="0" class="table table-bordered table-hover table-admin">
+<input type="hidden" name="id" value="<?php echo $sort->model["id"]; ?>">
+<div class="container-fluid">
+  <div class="row">
+    <!-- left -->    
+    <div class="col-xs-8 form-horizontal">
 
-<!-- pid -->
-  <tr>
-    <th scope="row"><label>上级分类</label></th>
-    <td style="width:450px;">
-    <select name="pid" id="pid" class="form-control" style="width:200px;" disabled<%end if%>>
-    	<option value="0">根目录</option>
-		  <?php
-        $arrayList = $sort->getList();
-        $arrayList = $sort->levelList($arrayList);
-        foreach ($arrayList as $key => $row) {
-          echo '<option value="'.$row["id"].'">'.$row["deepTag"].$row["title"].'</option>';
-        }
-      ?>
-    </select>
-    </td>
-    <td><div class="tip">上级分类</div></td>
-  </tr>
+      <div class="form-group">
+        <label for="" class="col-sm-2 control-label">上级分类</label>
+        <div class="col-sm-10">
+          <select name="pid" id="pid" class="form-control" style="width:300px;">
+          <option value="0">根目录</option>
+          <?php
+            $list = $sort->getList();
+            $arrayList = $sort->getLevelList($list,0,0);
+            foreach ($arrayList as $key => $row) {
+              echo '<option value="'.$row["id"].'">'.$row["deepTag"].$row["title"].'</option>';
+            }
+          ?>
+          </select>
+        </div>
+      </div>    
 
-<!-- title -->
-  <tr>
-    <th scope="row"><label>分类名称</label></th>
-    <td><input name="title" type="text" class="form-control" id="title" value="<?php echo $sort->model["title"] ?>" maxlength="255" /></td>
-    <td><div class="tip">*分类名称</div></td>
-  </tr>
+      <div class="form-group">
+        <label for="" class="col-sm-2 control-label">分类名称</label>
+        <div class="col-sm-10">
+          <input name="title" type="text" class="form-control require" id="title" value="<?php echo $sort->model["title"] ?>" maxlength="255" />
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="" class="col-sm-2 control-label">缩略图</label>
+        <div class="col-sm-10">
+          <p><input name="pic" type="text" id="pic" value="<?php echo $sort->model["pic"];?>" placeholder="" class="form-control" /></p>
+          <div class="well well-sm">
+              <div class="" id="filePicker">上传图片</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="" class="col-sm-2 control-label">内容主体</label>
+        <div class="col-sm-10">
+          <script id="content" name="content" type="text/plain" style="height:300px;"><?php echo $sort->model["content"] ?></script>
+        </div>
+      </div>
 
-<!-- pic -->  
-<tr>
-    <th><label>缩略图</label></th>
-    <td>
-    <div class="input-group">
-      <input name="pic" type="text" id="pic" value="<?php echo $sort->model["pic"] ?>" class="form-control" />
-      <div class="input-group-btn" style="position:relative">
-          <input name="" type="button" class="btn btn-default" value="上传图片" id="upload_btn" onClick="selectFile()">
-          <iframe class="upload_btn" src="upload.asp" style="position:absolute;top:0;z-index:999;right:0px;width:90px;height:35px;" scrolling="no" frameborder="0"></iframe>
+    </div>
+    <!-- left.end -->
+
+    <div class="col-xs-3">
+      
+        <div class="form-group">
+          <label for="">URL别名</label>
+          <input name="urlname" type="text" class="form-control url" id="urlname" value="<?php echo $sort->model["urlname"] ?>" maxlength="255" />
+        </div>
+
+        <div class="form-group">
+          <label for="">分类显示模板</label>
+          <select name="sort_template" id="sort_template" class="form-control">
+              <option value="">分类模板</option>
+              <?php 
+              $templateFiles = getTemplate();
+              foreach ($templateFiles as  $value) {
+                $value = iconv('gb2312','utf-8',$value);
+                echo "<option value=\"{$value}\">{$value}</option>";
+              }
+               ?>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="">内容显示模板</label>
+          <select name="content_template" id="content_template" class="form-control">
+              <option value="">内容模板</option>
+              <?php
+              foreach ($templateFiles as  $value) {
+                $value = iconv('gb2312','utf-8',$value);
+                echo "<option value=\"{$value}\">{$value}</option>";
+              }
+              ?>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="">排序</label>
+          <input name="weight" type="text" id="weight" value="<?php echo $sort->model["weight"] ?>" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <div class="checkbox"><label>
+          <input name="is_parent" type="checkbox" <?php if($sort->model["is_parent"]==1){echo "checked value='1'";}?>> 
+          不显示在分类列表中
+          </label>
+          <div class="checkbox"><label>
+          <input name="is_nav" type="checkbox" <?php if($sort->model["is_nav"]==1){echo "checked value='1'";}?>> 
+          不显示在导航中</label>
+        </div>
+
+        <div class="well well-sm">
+          <a href="" class="btn btn-success"> <i class="fa fa-check"></i> 预览</a>
+          <button type="submit" class="btn btn-primary"> <i class="fa fa-check"></i> 发布</button>
         </div>
     </div>
-    </td>
-    <td>
-      <div class="tip">
-        
-      </div>
-    </td>
-  </tr>
+    <!-- right.end -->
+    <div class="clearfix"></div>
+  </div>
+</div>
 
-<!-- urlname -->
-  <tr>
-    <th scope="row"><label>URL别名</label></th>
-    <td>
-    	<input name="urlname" type="text" class="form-control url" id="urlname" value="<?php echo $sort->model["urlname"] ?>" maxlength="255" />
-    </td>
-    <td><div class="tip">URL名称，跳转请输入网址 http://</div></td>
-  </tr>
 
-<!-- template -->
-  <tr>
-    <th scope="row"><label>模板</label></th>
-    <td>
-    	<div class="row">
-        	<div class="col-sm-6">
-            	<select name="sort_template" id="sort_template" class="form-control">
-                    <option value="">分类模板</option>
-                    <?php echo getTemplate() ?>
-                </select>
-            </div>
-            <div class="col-sm-6">
-            	<select name="content_template" id="content_template" class="form-control">
-                    <option value="">内容模板</option>
-                    <?php echo getTemplate() ?>
-                </select>
-            </div>
-        </div>
 
-        <div class="checkbox"><label><input type="checkbox" name="changeChild" value="True" id="changeChild" />修改小类模板</label></div>
-
-    </td>
-    <td>
-    	<div class="tip">*列表/内容显示模板</div>
-    </td>
-  </tr>
-
-<!-- content -->
-  <tr>
-    <th><label>分类内容</label></th>
-    <td colspan="2">
-
-        <script id="content" name="content" type="text/plain" style="width:760px;height:300px;"><?php echo $sort->model["content"] ?></script>
-        <script>
-            var ue = UE.getEditor('content');
-        </script>
-
-    </td>
-  </tr>
-
-<!-- weight -->
-  <tr>
-    <th scope="row"><label>排序</label></th>
-    <td>
-    <input name="weight" type="text" id="weight" value="<?php echo $sort->model["weight"] ?>" class="form-control weight" />
-    </td>
-    <td>
-    	<div class="tip">*越大排越前</div>
-    </td>
-  </tr>
-
-<!-- button -->
-  <tr>
-    <th scope="row">&nbsp;</th>
-    <td>
-    <input name="id" type="hidden" value="<?php echo $sort->model["weight"] ?>" />
-    <button type="submit" class="btn btn-primary"> <i class="fa fa-check"></i> 保存设置</button>
-    </td>
-    <td></td>
-  </tr>
-</table>
 </form>
+<script>
+var ue = UE.getEditor('content');
 
+$(function(){
+    $('#pid').val('<?php echo $sort->model["pid"] ?>');
+    $('#sort_template').val('<?php echo $sort->model["sort_template"] ?>');
+    $('#content_template').val('<?php echo $sort->model["content_template"] ?>');
+})
+
+//缩略图上传
+var uploader = WebUploader.create({
+    fileNumLimit:1,
+    auto: true,
+    swf: '../include/webuploader/Uploader.swf',
+    server: '../include/webuploader/server/fileupload.php',
+    pick: '#filePicker',
+    accept: {
+        title: 'Images',
+        extensions: 'jpg,png',
+        mimeTypes: 'image/*'
+    },
+    compress:{
+        width: 400,
+        height: 400,
+    }
+});
+
+uploader.on( 'uploadError', function( file , reason ) {
+   alert('上传失败');
+});
+
+uploader.on( 'uploadSuccess', function( file , response) {    
+    var imgurl = response.url;
+    $('#pic').val(imgurl);
+});
+
+</script>
 </body>
 </html>
 
