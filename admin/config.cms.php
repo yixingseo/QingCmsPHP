@@ -1,10 +1,6 @@
 <?php 
 require "./cms.header.php";
 require "./cms.meta.php";
-require "../include/config.class.php";
-
-$config = new MyConfig;
-$config->read();
  ?>
 <!-- 系统设置 -->
 <h3>系统设置</h3>

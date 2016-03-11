@@ -23,6 +23,7 @@ class MyNews
 		$this->model["content"] = '';
 		$this->model["insert_date"] = '';
 		$this->model["insert_user"] = '';
+		$this->model['att'] = '';
 	}
 
 	/**
@@ -54,20 +55,22 @@ class MyNews
 	function update(){
 		if(!$_POST)
 			return 0;		
+		var_dump($_POST);
 		$sql = "UPDATE `$this->table` SET pid=:pid,title=:title,seotitle=:seotitle,keywords=:keywords,description=:description,content=:content,url=:url,pic=:pic,
-		urlname=:urlname,weight=:weight,info=:info where id=:id";
+		urlname=:urlname,weight=:weight,info=:info,att=:att where id=:id";
 		$parameters = array(
 			":pid"=>$_POST["pid"],
 			":title"=>$_POST["title"],
 			":seotitle"=>$_POST["seotitle"],
 			":keywords"=>$_POST["keywords"],
 			":description"=>$_POST["description"],
-			":content"=>$_POST["content"],
+			":content"=>isset($_POST["content"])?$_POST["content"]:'',
 			":url"=>'',
 			":pic"=>$_POST["pic"],
 			":urlname"=>$_POST["urlname"],
 			":weight"=>$_POST["weight"],
 			":info"=>$_POST["info"],
+			":att"=>$_POST["att"],
 			":id"=>$_POST["id"]
 		);
 		global $DB;

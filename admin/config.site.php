@@ -2,9 +2,6 @@
 require "./cms.header.php";
 require "./cms.meta.php";
 require "../include/config.class.php";
-
-$config = new MyConfig;
-$config->read();
  ?>
 
 <body class="abody">

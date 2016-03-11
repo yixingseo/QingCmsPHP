@@ -29,7 +29,7 @@ class MyPDO extends PDO
     function fetchAll($sql,$parameters = array(),$type=PDO::FETCH_ASSOC){
         $rs = $this->prepare($sql);
         $rs->execute($parameters);
-        $rows = $rs->fetchAll($type);
+        $rows = $rs->fetchAll($type);        
         $rs->closeCursor();
         unset($rs);
         return $rows;

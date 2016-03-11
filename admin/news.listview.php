@@ -3,31 +3,32 @@ include "./cms.header.php";
 include "./cms.meta.php";
 
 include "../include/news.class.php";
+include "../include/sort.class.php";
+
 
 $where = " where news.show > -1 ";
 $parameters = array();
 
-if(isset($_GET['search_keywords'])){
-  $where.= "and news.title like '%".$_GET['search_keywords']."%' ";
+if(isset($_GET['pid']) && $_GET['pid'] > 0){  
+  $where.= "and news.pid=:pid ";
+  $parameters[':pid'] = $_GET['pid'];
 }
 
-$plist = pagelist("select count(*) from t_news as news " . $where,20);
-$sql = "SELECT 
-news.id, 
-news.title,
-news.att,
-news.url,
-news.pic,
-news.weight,
-news.hits,
-sort.id as sort_id,
-sort.title as sort_title
-FROM `t_news` AS news
-LEFT JOIN `t_sort` as sort
-ON sort.id = news.pid ". $where . $plist['limit'];
-$rs = $DB->prepare($sql,$parameters);
-echo $sql;
+if(isset($_GET['search_keywords'])){
+  $where.= "and news.title like :keywords ";
+  $parameters[':keywords'] = '%'.$_GET['search_keywords'].'%';
+}
+
+$sql = "SELECT news.id, news.title,news.att,news.url,news.pic,news.weight,news.hits,sort.id as sort_id,sort.title as sort_title";
+$sql.= " FROM `t_news` AS news LEFT JOIN `t_sort` as sort ON sort.id = news.pid ". $where;
+//分页
+$pagesize = 20;
+$sql.= ' '.getLimit($pagesize);
+$total = $DB->fetchAll("select count(*) from t_news as news ".$where,$parameters);
+//var_dump($sql);
+//var_dump($parameters);
 ?>
+
 
 <h3>内容管理</h3>
 <!-- 操作 -->
@@ -54,7 +55,14 @@ echo $sql;
 		<div class="form-group">
 			<select name="sort_jump_box" id="sort_jump_box" class="form-control">
       	<option value="0">按分类查看</option>
-
+      <?php
+        $sort = new MySort;
+        $arrayList = $sort->getList();
+        $arrayList = $sort->getTree($arrayList);
+        foreach ($arrayList as $key => $row) {
+          echo '<option value="'.$row["id"].'">'.$row["deepTag"].$row["title"].'</option>';
+        }
+      ?>
       </select>
 		</div>
 
@@ -67,8 +75,6 @@ echo $sql;
 	</div>
 </div>
 <!-- 操作栏 -->
-
-
 <table class="table table-bordered table-hover">
   <tr>
   	<th width="50" class="text-center"><input name="select_all" id="select_all" type="checkbox"></th>
@@ -83,11 +89,8 @@ echo $sql;
     <th>操作</th>
   </tr>
 <?php
-//$rs=$DB->prepare("select * from t_news order by weight desc,id desc");
-$rs->execute();
+$rs = $DB->fetchAll($sql,$parameters);
 foreach ($rs as $key => $row) {
-  //var_dump($row);
-	# code...  
  ?>
   <tr id="<?php echo $row["id"]?>">
   	<td align="center"><input name="ids" type="checkbox" class="ck" value="<?php echo $row["id"]?>" /></td>
@@ -112,15 +115,17 @@ foreach ($rs as $key => $row) {
 </table>
 
 <?php 
-echo $plist['html'];
+echo getPagelist($total[0]['count(*)'],$pagesize);
  ?>
 
 <script>
 $(function(){
-
+  $('#sort_jump_box').change(function(){
+    document.location.href='news.listview.php?pid='+$('#sort_jump_box').val();
+  })
 })
 
-<?php if($_GET['search_keywords']){?>
+<?php if(isset($_GET['search_keywords'])){?>
 $('#search_keywords').val('<?php echo $_GET['search_keywords'] ?>');
 <?php } ?>
 

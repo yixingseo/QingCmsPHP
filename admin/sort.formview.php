@@ -39,7 +39,7 @@ if(isset($_GET["id"])){
           <option value="0">根目录</option>
           <?php
             $list = $sort->getList();
-            $arrayList = $sort->getLevelList($list,0,0);
+            $arrayList = $sort->getTree($list,0,0);
             foreach ($arrayList as $key => $row) {
               echo '<option value="'.$row["id"].'">'.$row["deepTag"].$row["title"].'</option>';
             }

@@ -14,6 +14,7 @@ switch ($action) {
 		break;
 
 	case 'delete':
+		$news->delete();
 		break;
 
 	default:

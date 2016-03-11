@@ -52,7 +52,7 @@
 </form>  
 
 <script>
-$('#loginForm').submit(function(){
+$('#loginForm').click(function(){
 		if( $('#username').val() == ''){
 			$("#username").parent(".form-group").addClass("has-error");
 			$("#username").focus();

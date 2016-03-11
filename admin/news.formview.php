@@ -7,8 +7,7 @@ require("../include/sort.class.php");
 $news = new MyNews;
 $id = 0;
 if(isset($_GET["id"])){
-    $news->read($_GET["id"]);
-    //var_dump($news);
+    $news->read($_GET["id"]);    
 }
 
 ?>
@@ -35,7 +34,7 @@ if(isset($_GET["id"])){
                       <?php
                         $sort = new MySort;
                         $arrayList = $sort->getList();
-                        $arrayList = $sort->getLevelList($arrayList);
+                        $arrayList = $sort->getTree($arrayList);
                         foreach ($arrayList as $key => $row) {
                           echo '<option value="'.$row["id"].'">'.$row["deepTag"].$row["title"].'</option>';
                         }
@@ -115,9 +114,18 @@ if(isset($_GET["id"])){
 
                 <div class="form-group">
                     <div class="checkbox">
-                        <label><input type="checkbox"> 推荐</label>
-                        <label><input type="checkbox"> 滚动</label>
-                        <label><input type="checkbox"> 幻灯片</label>
+                    <?php 
+                    //var_dump($news->model);
+                    $att = $config->data['news_att'];
+                        $att_array = preg_split('/,/', $att);
+                        foreach ($att_array as $key => $value) {
+                            $is_checkd = '';                            
+                            if(strpos($news->model['att'], $value)>-1)
+                                $is_checkd = ' checked';                                                    
+                            echo '<label><input name="att" type="checkbox"'.$is_checkd.'>'.$value.'</label> ';
+                            //var_dump(strpos($news->model['att'], $value));
+                        }                   
+                     ?>
                     </div>
                 </div>
 
@@ -174,6 +182,11 @@ uploader.on( 'uploadSuccess', function( file , response) {
 });
 
 </script>
+
+<?php 
+
+var_dump($news->model);
+ ?>
 
 </body>
 </html>

@@ -2,6 +2,27 @@
 //error_reporting(2)
 
 /**
+ * POST
+ * string
+ */
+function post($str){
+    if(isset($POST[$str]))
+        return $POST[$str];
+    else
+        return '';
+}
+
+/**
+ * GET
+ */
+function get($str){
+    if(isset($GET[$str]))
+        return $GET[$str];
+    else
+        return '';
+}
+
+/**
  * 输出加换行
  * string
  */
@@ -95,7 +116,7 @@ function randString($l){
  * 分类深度
  * string
  */
-function getDeep($deep){
+function getDeepTag($deep){
 	if($deep ==0)
 		return "┠ ";
 	$str = '';
@@ -103,6 +124,41 @@ function getDeep($deep){
 		$str.="&nbsp;&nbsp;";
 	}
 	return $str."└ ";
+}
+
+/**
+ * 分类层级列表
+ * array
+ */
+$category_tree_list = array();
+
+function getCategoryTree($pid=0){
+    global $DB;
+    $arr = $DB->fetchAll("SELECT * FROM `t_sort` order by weight desc, id desc");
+}
+
+function categoryTree($pid=0,$level=0){
+
+}
+
+
+/**
+ * 分类层级列表
+ * string
+ */
+function getCategorySelectBox($name='pid',$id='pid'){
+    return '<select name="'.$name.'" id="'.$id.'">'.getCategoryOptions().'</select>';
+}
+
+function getCategoryOptions($pid=0,$level=0){
+    global $DB;
+    $str = '';
+    $arr = $DB->fetchAll("SELECT * FROM `t_sort` where pid=? order by weight desc, id desc",array($pid));
+    foreach ($arr as $key => $row) {
+        $str.='<option value="'.$row['id'].'">'.getDeepTag($level).$row['title'].'</option>';
+        $str.=getCategoryOptions($row['id'],$level+1);
+    }
+    return $str;
 }
 
 /**
@@ -135,43 +191,71 @@ function getFile($dir) {
     return $fileArray;
 }
 
+
+/**
+ * 获取当前页码
+ */
+function getCurrentPage(){
+    $current_page = isset($_GET['page']) ? $_GET['page'] : 1;    
+    if($current_page < 1)
+        $current_page = 1;    
+    return $current_page;
+}
+
+/**
+ * 获取Mysql Limit
+ */
+function getLimit($pagesize){    
+    $limit = (getCurrentPage() - 1) * $pagesize;
+    return "LIMIT $limit,$pagesize";
+}
+
 /**
  * 显示分页
  */
-function pagelist($sql,$pagesize=10){
-    $array = array();
-    global $DB;
-    //记录总数
-    $total = $DB->fetchValue($sql);
-    //总页数
-    $page_count = ceil($total / $pagesize);    
-    //当前页
-    $current_page = isset($_GET['page']) ? $_GET['page'] : 1;
-    if($current_page < 1)
-        $current_page = 1;
-    //LIMIT
-    $limit = ($current_page-1) * $pagesize;
-    $array['limit'] = "LIMIT $limit,$pagesize";
-    
+function getPagelist($total,$pagesize=10){
+    $page_count = ceil($total / $pagesize);
+    $current_page = getCurrentPage();
+
+    $thisurl = $_SERVER['PHP_SELF'];
+    $pas = '';
+    foreach ($_GET as $key => $value) {
+        if($key != 'page')
+            $pas.="$key=$value&";
+    }
+    $pas = '?' . $pas .'page=';        
+    $thisurl.=$pas;
+
+
     //分页条
     $html = '<nav class="text-center">';
     $html.= '<ul class="pagination">';
     //上一页
-    $html.= $current_page > 1 ? '<li>' : '<li class="disabled">';
-    $html.= '<a href="#" aria-label="Previous"><span aria-hidden="true">上一页</span></a></li>';
+    if($current_page > 1){
+        $html.= '<li>';
+        $html.= '<a href="'.$thisurl. ($current_page-1) .'" aria-label="Previous"><span aria-hidden="true">上一页</span></a></li>';
+    }else{
+        $html.= '<li class="disabled">';
+        $html.= '<a href="#" aria-label="Previous"><span aria-hidden="true">上一页</span></a></li>';
+    }
     //页数
 
     for($i=1;$i<$page_count+1;$i++){
         $active = $i==$current_page ? ' class="active"' : '';
-        $html.='<li'.$active.'><a href="'. $_SERVER['PHP_SELF'] .'?page='. $i .'">'. $i .'</a></li>';
+        $html.='<li'.$active.'><a href="'. $thisurl . $i .'">'. $i .'</a></li>';
     }
 
-    //下一页
-    $html.= $current_page < $page_count ? '<li>' : '<li class="disabled">';
-    $html.= '<a href="#" aria-label="Next"><span aria-hidden="true">下一页</span></a></li>';
+    //下一页    
+    if($current_page < $page_count){
+        $html.='<li>';
+        $html.= '<a href="'.$thisurl . ($current_page + 1) . '" aria-label="Next"><span aria-hidden="true">下一页</span></a></li>';
+        //$html.='<a href="'.$thisurl . ($current_page + 1) . '" aria-label="Next"><span aria-hidden="true">下一页</span></a></li>'
+    }else{
+        $html.='<li class="disabled">';
+        $html.='<a href="#" aria-label="Next"><span aria-hidden="true">下一页</span></a></li>';        
+    }   
     $html.= '</ul></nav>';
-    $array['html'] = $html;    
-    return $array;    
+    return $html;
 }
 
 ?>

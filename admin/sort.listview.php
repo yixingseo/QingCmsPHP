@@ -27,7 +27,7 @@ require("../include/sort.class.php");
 <?php
 $sort = new MySort;
 $arrayList = $sort->getList();
-$arrayList = $sort->getLevelList($arrayList);
+$arrayList = $sort->getTree($arrayList);
 foreach ($arrayList as $key => $row) {
 ?>
 

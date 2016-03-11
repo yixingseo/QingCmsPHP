@@ -1,6 +1,5 @@
 <?php
 require("./cms.header.php");
-require("../include/config.class.php");
 $config = new MyConfig;
 if(!isset($_GET["action"]))
 	exit;

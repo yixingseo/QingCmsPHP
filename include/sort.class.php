@@ -5,7 +5,7 @@ class MySort
 {
 	public $model = array();
 	public $table = "t_sort";
-	public $list;
+	public $listTree;
 
 	/**
 	 * 析构函数
@@ -28,20 +28,20 @@ class MySort
 	/**
 	 * 分类层级列表
 	 */
-	function getLevelList($data,$pid=0,$deep=0){		
+	function getTree($data,$pid=0,$deep=0){		
 		$array = array();
 		foreach ($data as $key => $row) {
 			if($row["pid"] == $pid){
 					$row["deep"] = $deep;
-					$row["deepTag"] = getDeep($deep);
-					$this->list[] = $row;
-					$array = $this->getLevelList($data,$row["id"],$deep+1);
+					$row["deepTag"] = getDeepTag($deep);
+					$this->listTree[] = $row;
+					$array = $this->getTree($data,$row["id"],$deep+1);
 				}
 		}
 		if(count($array) > 0)
 			return $array;
 		else
-			return $this->list;		
+			return $this->listTree;		
 	}
 
 	/**
@@ -99,7 +99,7 @@ class MySort
 			":title" => $_POST["title"],
 			":pid" => $_POST["pid"],
 			":urlname" => $_POST["urlname"],
-			":content" => $_POST["content"],
+			":content" => (isset($_POST["content"])?$_POST["content"] : ''),
 			":is_parent" => array_key_exists("is_parent",$_POST)? 1 : 0,
 			":is_nav" => array_key_exists("is_nav",$_POST)? 1 : 0,
 			":sort_template" => $_POST["sort_template"],
@@ -147,6 +147,13 @@ class MySort
 		}else{
 			return $DB->delete("DELETE FROM ". $this->table . " where id = ?",array($id));				
 		}
+		
+	}
+
+	/**
+	 * 取得所有子类ID
+	 */
+	function getChild($id=0){
 		
 	}
 }
